@@ -15,6 +15,55 @@ class _SignupPageState extends State<SignupPage> {
   TextEditingController confirmPasswordTextEditingController = TextEditingController();
   TextEditingController usernameTextEditingController = TextEditingController();
 
+  //form validation and signup method
+  validateSignupForm(){
+    if (usernameTextEditingController.text.trim().length <3) {
+          associateMethods.showSnackBarMsg('name must be atleast three characters', context);
+    }
+
+    else if (!emailTextEditingController.text.trim().contains("@")) {
+          associateMethods.showSnackBarMsg('please enter a valid email ', context);
+    }
+
+    else if (!emailTextEditingController.text.trim().contains("@")) {
+          associateMethods.showSnackBarMsg('please enter a valid email ', context);
+    }
+
+    else if (phoneTextEditingController.text.trim().length < 7) {
+          associateMethods.showSnackBarMsg('please enter a valid phone number ', context);
+    }
+
+    else{
+      signUserNow() async {
+        try{
+          final User? firebaseUser = (
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+              email: emailTextEditingController.text.trim(), 
+              password: passwordTextEditingController.text.trim()
+              ).catchError((onError){
+                  associateMethods.showSnackBarMsg(onError.toString(), context);
+                })
+          ).user;
+
+          Map userDataMap = {
+            "name" : usernameTextEditingController.text.trim(),
+            "email" : emailTextEditingController.text.trim(),
+            "phone" : phoneTextEditingController.text.trim(),
+
+          };
+
+          FirebaseDatabase.instance.ref().child('users').child(firebaseUser!.uid).set(userDataMap);
+          associateMethods.showSnackBarMsg("account created successfully", context);
+        }
+        on FirebaseAuthException catch(e){
+          FirebaseAuth.instance.signOut();
+          associateMethods.showSnackBarMsg(e.toString(), context);
+        }
+      }
+    } 
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -12,6 +12,71 @@ class SigninPage extends StatefulWidget {
 class _SigninPageState extends State<SigninPage> {
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
+
+  ValidateSignInForm(){
+
+    SignInUserNow() async {
+      showDialog(context: context, builder: (BuildContext context)=> LoadingScreen());
+
+      try{
+          final User? firebaseUser = (
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+              email: emailTextEditingController.text.trim(), 
+              password: passwordTextEditingController.text.trim()
+              ).catchError((onError){
+                  Navigator.pop(context);
+                  associateMethods.showSnackBarMsg(onError.toString(), context);
+                })
+          ).user;
+
+          if (firebaseUser != null){
+            DatabaseReference ref = FirebaseDatabase.instance.ref().child('users').child(firebaseUser.uid);
+            await ref.once().then((dataSnapshot){
+              if(dataSnapshot.snapshot.value != null){
+                if((dataSnapshot.snapshot.value as Map)["blockStatus"] == "no"){
+                userName = (dataSnapshot.snapshot.value as Map)["name"];
+                userPhone = (dataSnapshot.snapshot.value as Map)["phone"];
+                
+                associateMethods.showSnackBarMsg("logged in successfully", context);
+                Navigator.push(context, MaterialPageRoute(builder: (c)=> const HomePage())); //redirect user to homepage
+                }
+
+                else{
+                  FirebaseAuth.instance.signOut();
+                  associateMethods.showSnackBarMsg("You have been blocked, contact admin at chanetsateryn@gmail.com", context);
+                }
+              }
+              else{
+                FirebaseAuth.instance.signOut();
+                associateMethods.showSnackBarMsg("user not found in records", context);
+              }
+            });
+          }
+          
+      }
+
+      on FirebaseAuthException catch(e){
+          FirebaseAuth.instance.signOut();
+          Navigator.pop(context);
+          associateMethods.showSnackBarMsg(e.toString(), context);
+      }
+    }
+
+
+    if(!emailTextEditingController.text.contains("@")){
+      associateMethods.showSnackBarMsg("email is not valid", context);
+    }
+
+    else if(passwordTextEditingController.text.trim().length < 5 ){
+      associateMethods.showSnackBarMsg("password must be 5 characters or more", context);
+    }
+    
+    else{
+      SignInUserNow();
+    }
+    
+  }
+  
   
   @override
   Widget build(BuildContext context) {
