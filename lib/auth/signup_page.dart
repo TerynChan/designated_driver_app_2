@@ -1,4 +1,9 @@
 import 'package:designated_driver_app_2/auth/signin_page.dart';
+import 'package:designated_driver_app_2/global.dart';
+import 'package:designated_driver_app_2/pages/home_page.dart';
+import 'package:designated_driver_app_2/widgets/loading_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class SignupPage extends StatefulWidget {
@@ -12,11 +17,47 @@ class _SignupPageState extends State<SignupPage> {
 
   TextEditingController emailTextEditingController = TextEditingController();
   TextEditingController passwordTextEditingController = TextEditingController();
-  TextEditingController confirmPasswordTextEditingController = TextEditingController();
+  TextEditingController phoneTextEditingController = TextEditingController();
   TextEditingController usernameTextEditingController = TextEditingController();
 
   //form validation and signup method
   validateSignupForm(){
+
+    //declaration of signuser function with firebase 
+    signUserNow() async {
+
+      //loading screen while signing up
+      showDialog(context: context, builder: (BuildContext context)=> LoadingScreen());
+        try{
+          final User? firebaseUser = (
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+              email: emailTextEditingController.text.trim(), 
+              password: passwordTextEditingController.text.trim()
+              ).catchError((onError){
+                  Navigator.pop(context);
+                  associateMethods.showSnackBarMsg(onError.toString(), context);
+                })
+          ).user;
+
+          Map userDataMap = {
+            "name" : usernameTextEditingController.text.trim(),
+            "email" : emailTextEditingController.text.trim(),
+            "phone" : phoneTextEditingController.text.trim(),
+          };
+
+          FirebaseDatabase.instance.ref().child('users').child(firebaseUser!.uid).set(userDataMap);
+          Navigator.pop(context);
+          associateMethods.showSnackBarMsg("account created successfully", context);
+          Navigator.push(context, MaterialPageRoute(builder: (c)=> const HomePage())); //redirect user to homepage
+        }
+        on FirebaseAuthException catch(e){
+          FirebaseAuth.instance.signOut();
+          Navigator.pop(context);
+          associateMethods.showSnackBarMsg(e.toString(), context);
+        }
+      }
+
+    //form validation logic
     if (usernameTextEditingController.text.trim().length <3) {
           associateMethods.showSnackBarMsg('name must be atleast three characters', context);
     }
@@ -34,34 +75,8 @@ class _SignupPageState extends State<SignupPage> {
     }
 
     else{
-      signUserNow() async {
-        try{
-          final User? firebaseUser = (
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-              email: emailTextEditingController.text.trim(), 
-              password: passwordTextEditingController.text.trim()
-              ).catchError((onError){
-                  associateMethods.showSnackBarMsg(onError.toString(), context);
-                })
-          ).user;
-
-          Map userDataMap = {
-            "name" : usernameTextEditingController.text.trim(),
-            "email" : emailTextEditingController.text.trim(),
-            "phone" : phoneTextEditingController.text.trim(),
-
-          };
-
-          FirebaseDatabase.instance.ref().child('users').child(firebaseUser!.uid).set(userDataMap);
-          associateMethods.showSnackBarMsg("account created successfully", context);
-        }
-        on FirebaseAuthException catch(e){
-          FirebaseAuth.instance.signOut();
-          associateMethods.showSnackBarMsg(e.toString(), context);
-        }
-      }
-    } 
-
+      signUserNow();
+    }
   }
 
   @override
@@ -126,6 +141,23 @@ class _SignupPageState extends State<SignupPage> {
                   const SizedBox(height: 20),
 
                   TextField(
+                    controller: phoneTextEditingController,
+                    decoration: InputDecoration(
+                      labelText: "Phone",
+                      labelStyle: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
+                      hintText: "enter your phone number",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  TextField(
                     controller: passwordTextEditingController,
                     obscureText: true,
                     decoration: InputDecoration(
@@ -143,26 +175,9 @@ class _SignupPageState extends State<SignupPage> {
 
                   const SizedBox(height: 20),
                   
-                  TextField(
-                    controller: passwordTextEditingController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: "Confirm Password",
-                      labelStyle: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
-                      hintText: "confirm your password",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
                   ElevatedButton(onPressed: () {
-                    // Handle sign in logic here
+                    // signup logic using firebase
+                    validateSignupForm();
                     }, 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green

@@ -1,4 +1,9 @@
 import 'package:designated_driver_app_2/auth/signup_page.dart';
+import 'package:designated_driver_app_2/global.dart';
+import 'package:designated_driver_app_2/pages/home_page.dart';
+import 'package:designated_driver_app_2/widgets/loading_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class SigninPage extends StatefulWidget {
@@ -36,17 +41,19 @@ class _SigninPageState extends State<SigninPage> {
                 if((dataSnapshot.snapshot.value as Map)["blockStatus"] == "no"){
                 userName = (dataSnapshot.snapshot.value as Map)["name"];
                 userPhone = (dataSnapshot.snapshot.value as Map)["phone"];
-                
+
                 associateMethods.showSnackBarMsg("logged in successfully", context);
                 Navigator.push(context, MaterialPageRoute(builder: (c)=> const HomePage())); //redirect user to homepage
                 }
 
                 else{
+                   Navigator.pop(context); //removing loading screen view
                   FirebaseAuth.instance.signOut();
                   associateMethods.showSnackBarMsg("You have been blocked, contact admin at chanetsateryn@gmail.com", context);
                 }
               }
               else{
+                 Navigator.pop(context); //removing loading screen view 
                 FirebaseAuth.instance.signOut();
                 associateMethods.showSnackBarMsg("user not found in records", context);
               }
@@ -94,7 +101,7 @@ class _SigninPageState extends State<SigninPage> {
 
             const SizedBox(height: 20),
             
-            Text("Sign Up as new User", 
+            Text("Welcome !", 
              style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold,),
             ),
             
@@ -143,6 +150,7 @@ class _SigninPageState extends State<SigninPage> {
 
                   ElevatedButton(onPressed: () {
                     // Handle sign in logic here
+                    ValidateSignInForm();
                     }, 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green
