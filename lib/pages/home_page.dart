@@ -38,6 +38,100 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext contextr) {
     return Scaffold(
+      key: sKey,
+
+      drawer: Container(
+        width: 256,
+        child: Drawer(
+          child: ListView(
+            children: [
+
+              //header of drawer
+              SizedBox(
+                height: 160,
+                child: DrawerHeader(
+                  decoration: const BoxDecoration(
+                  color: Colors.white,
+                ),
+                  child: Row(
+                    children: [
+                      Image.asset("assets/avatar.jpg",
+                      width: 60,
+                      height: 60,
+                      ),
+
+                      const SizedBox(width: 16,),
+
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            userName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          
+                          const SizedBox( height: 16,),
+
+                          const Text(
+                            "profile",
+                            style: TextStyle(
+                              color: Colors.grey,
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ), 
+                ),
+              ),
+
+              //body of drawer
+              GestureDetector(
+                onTap: (){},
+                child: ListTile(
+                  leading: const Icon(Icons.history, color: Colors.grey,),
+                  title: Text("history",
+                  style: const TextStyle(
+                    color: Colors.grey,
+                  ),
+                  ),
+                ),
+              ),
+ 
+               GestureDetector(
+                onTap: (){},
+                child: const ListTile(
+                  leading:  Icon(Icons.info, color: Colors.grey,),
+                  title: Text("About",
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                  ),
+                ),
+              ),
+
+               GestureDetector(
+                onTap: (){ 
+                  FirebaseAuth.instance.signOut();
+                  Navigator.push(context, MaterialPageRoute(builder: (c)=> SigninPage()));
+                },
+                child: const ListTile(
+                  leading: Icon(Icons.logout, color: Colors.grey,),
+                  title: Text("Log Out",
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      
       body: Stack(
         children: [
           //google map
