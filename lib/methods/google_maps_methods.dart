@@ -40,21 +40,21 @@ class GoogleMapsMethods{
       
       var responseFromApi = await SendReqeustToAPI(GeocodingApiUrl);
 
-      if (responseFromApi == "error"){
+      if (responseFromApi != "error"){
         HumanReadableAddress = responseFromApi["results"][0]["formatted_address"];
-        print( "human readable address = "+HumanReadableAddress);
+        print( "human readable address = $HumanReadableAddress");
 
         AddressModel addressModel = AddressModel();
         addressModel.HumanReadableAddress = HumanReadableAddress;
         addressModel.placeName = HumanReadableAddress;
         addressModel.placeID = responseFromApi["results"][0]["place_id"];
-        addressModel.latitudePosition = position.latitude as String?;
-        addressModel.longitudePosition = position.longitude as String?;
+        addressModel.latitudePosition = position.latitude ;
+        addressModel.longitudePosition = position.longitude;
         
         Provider.of<AppInfo>(context, listen: false).updatePickUpLocation(addressModel);
       }
       else{
-        print( "\n\n Error Occured \n\n");
+        print( "\n\n Error Occured 2 \n\n");
       }
       return HumanReadableAddress;
     }

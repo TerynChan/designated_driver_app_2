@@ -1,5 +1,6 @@
 import 'package:designated_driver_app_2/auth/signup_page.dart';
 import 'package:designated_driver_app_2/global.dart';
+import 'package:designated_driver_app_2/pages/driver_home_page.dart';
 import 'package:designated_driver_app_2/pages/home_page.dart';
 import 'package:designated_driver_app_2/widgets/loading_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,13 +22,16 @@ class _SigninPageState extends State<SigninPage> {
   ValidateSignInForm(){
 
     SignInUserNow() async {
-      showDialog(context: context, builder: (BuildContext context)=> LoadingScreen());
+      showDialog(
+        context: context, 
+        builder: (BuildContext context)=> LoadingScreen()
+      );
 
       try{
           final User? firebaseUser = (
             await FirebaseAuth.instance.signInWithEmailAndPassword(
               email: emailTextEditingController.text.trim(), 
-              password: passwordTextEditingController.text.trim()
+              password: passwordTextEditingController.text.trim(),       
               ).catchError((onError){
                   Navigator.pop(context);
                   associateMethods.showSnackBarMsg(onError.toString(), context);
@@ -38,19 +42,16 @@ class _SigninPageState extends State<SigninPage> {
             DatabaseReference ref = FirebaseDatabase.instance.ref().child('users').child(firebaseUser.uid);
             await ref.once().then((dataSnapshot){
               if(dataSnapshot.snapshot.value != null){
-                if((dataSnapshot.snapshot.value as Map)["blockStatus"] == "no"){
+                
                 userName = (dataSnapshot.snapshot.value as Map)["name"];
                 userPhone = (dataSnapshot.snapshot.value as Map)["phone"];
+                isDriver = (dataSnapshot.snapshot.value as Map)["isDriver"];
 
                 associateMethods.showSnackBarMsg("logged in successfully", context);
-                Navigator.push(context, MaterialPageRoute(builder: (c)=> const HomePage())); //redirect user to homepage
-                }
-
-                else{
-                   Navigator.pop(context); //removing loading screen view
-                  FirebaseAuth.instance.signOut();
-                  associateMethods.showSnackBarMsg("You have been blocked, contact admin at chanetsateryn@gmail.com", context);
-                }
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (c) => (isDriver == true) ? DriverHomePage() : const HomePage())); // Redirect user or driver to homepage
+                 
+                            
               }
               else{
                  Navigator.pop(context); //removing loading screen view 
@@ -156,11 +157,12 @@ class _SigninPageState extends State<SigninPage> {
                       backgroundColor: Colors.green
                     ), child: const Text("Sign in", style: TextStyle( color: Colors.white),),
                   ),
-                  
+
+        
                   const SizedBox(height: 20),
 
                   TextButton(onPressed: () {
-                    // Handle forgot password logic here
+                    // Handle new user logic here
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const SignupPage()));
                   }, child: const Text("Don't have an account? sign up here"),),
                   
