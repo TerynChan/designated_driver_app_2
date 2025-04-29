@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class DriverHomePage extends StatefulWidget {
+  const DriverHomePage({super.key});
+
   @override
   _DriverHomePageState createState() => _DriverHomePageState();
 }
