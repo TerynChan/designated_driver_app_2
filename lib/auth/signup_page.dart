@@ -1,7 +1,7 @@
 import 'package:designated_driver_app_2/auth/signin_page.dart';
 import 'package:designated_driver_app_2/global.dart';
-import 'package:designated_driver_app_2/pages/driver_home_page.dart';
-import 'package:designated_driver_app_2/pages/home_page.dart';
+import 'package:designated_driver_app_2/pages/driver/driver_home_page.dart';
+import 'package:designated_driver_app_2/pages/user/home_page.dart';
 import 'package:designated_driver_app_2/widgets/loading_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';

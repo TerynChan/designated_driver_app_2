@@ -1,7 +1,7 @@
 import 'package:designated_driver_app_2/auth/signup_page.dart';
 import 'package:designated_driver_app_2/global.dart';
-import 'package:designated_driver_app_2/pages/driver_home_page.dart';
-import 'package:designated_driver_app_2/pages/home_page.dart';
+import 'package:designated_driver_app_2/pages/driver/driver_home_page.dart';
+import 'package:designated_driver_app_2/pages/user/home_page.dart';
 import 'package:designated_driver_app_2/widgets/loading_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -46,6 +46,7 @@ class _SigninPageState extends State<SigninPage> {
                 userName = (dataSnapshot.snapshot.value as Map)["name"];
                 userPhone = (dataSnapshot.snapshot.value as Map)["phone"];
                 isDriver = (dataSnapshot.snapshot.value as Map)["isDriver"];
+                userId = (dataSnapshot.snapshot.value as Map)["userId"];
 
                 associateMethods.showSnackBarMsg("logged in successfully", context);
                 Navigator.push(

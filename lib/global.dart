@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 AssociateMethods associateMethods = AssociateMethods();
 String userName = "";
 String userPhone = "";
+String userId = "";
 bool isDriver = false;  
 
 String GoogleMapKey = "AIzaSyA8Zb2zL4aJP3G_Z7FBtZJbOHI4Bo4IX0U";

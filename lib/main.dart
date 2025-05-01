@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:designated_driver_app_2/appInfo/app_info.dart';
 import 'package:designated_driver_app_2/auth/signin_page.dart';
-import 'package:designated_driver_app_2/pages/home_page.dart';
+import 'package:designated_driver_app_2/pages/user/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
