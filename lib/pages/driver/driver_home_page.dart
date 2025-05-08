@@ -1,4 +1,5 @@
 import 'package:designated_driver_app_2/pages/driver/driver_profile_page.dart';
+import 'package:designated_driver_app_2/pages/driver/map_page.dart';
 import 'package:flutter/material.dart';
 
 class DriverHomePage extends StatefulWidget {
@@ -12,9 +13,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
   int _selectedIndex = 0;
 
   static const List<Widget> _pages = <Widget>[
-    Center(child: Text('Map Page', style: TextStyle(fontSize: 24))),
+    MapPage(),
     Center(child: Text('Earnings Page', style: TextStyle(fontSize: 24))),
-    Center(child: Text('Ratings Page', style: TextStyle(fontSize: 24))),
     DriverProfilePage(),
   ];
 
@@ -39,18 +39,16 @@ class _DriverHomePageState extends State<DriverHomePage> {
             icon: Icon(Icons.attach_money),
             label: 'Earnings',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star),
-            label: 'Ratings',
-          ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
+        iconSize: 40,
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-         unselectedItemColor: Colors.grey,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
     );

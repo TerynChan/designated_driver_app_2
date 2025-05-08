@@ -90,6 +90,7 @@ signUserNow() async {
             .catchError((onError) {
       Navigator.pop(context);
       associateMethods.showSnackBarMsg(onError.toString(), context);
+      throw onError; // Throw the error to satisfy the return type
     }))
         .user;
 

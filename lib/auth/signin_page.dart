@@ -35,6 +35,7 @@ class _SigninPageState extends State<SigninPage> {
               ).catchError((onError){
                   Navigator.pop(context);
                   associateMethods.showSnackBarMsg(onError.toString(), context);
+                  throw onError; // Re-throw the error to satisfy the return type
                 })
           ).user;
 
@@ -46,7 +47,7 @@ class _SigninPageState extends State<SigninPage> {
                 userName = (dataSnapshot.snapshot.value as Map)["name"];
                 userPhone = (dataSnapshot.snapshot.value as Map)["phone"];
                 isDriver = (dataSnapshot.snapshot.value as Map)["isDriver"];
-                userId = (dataSnapshot.snapshot.value as Map)["userId"];
+                userId = ref.key ?? '';
 
                 associateMethods.showSnackBarMsg("logged in successfully", context);
                 Navigator.push(
