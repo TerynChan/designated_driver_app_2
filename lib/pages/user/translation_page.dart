@@ -1,9 +1,5 @@
-import 'dart:convert';
 
-import 'package:designated_driver_app_2/global.dart';
 import 'package:flutter/material.dart';
-import 'package:html_unescape/html_unescape.dart';
-import 'package:http/http.dart' as http;
 import 'package:translator/translator.dart';
 
 class TranslationPage extends StatefulWidget {

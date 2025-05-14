@@ -42,7 +42,8 @@ dependencies:
   location: ^8.0.0
   translator: 
   http:
-  html_unescape:  
+  html_unescape: 
+  intl:  
   
   google_maps_flutter: 
   google_maps_routes:
