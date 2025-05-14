@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'package:designated_driver_app_2/appInfo/app_info.dart';
 import 'package:designated_driver_app_2/auth/signin_page.dart';
-import 'package:designated_driver_app_2/pages/user/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+
+import 'pages/user/home_page.dart';
 
 
 void main() async {

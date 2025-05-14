@@ -1,29 +1,39 @@
 import 'dart:async';
+import 'package:designated_driver_app_2/appInfo/app_info.dart';
 import 'package:designated_driver_app_2/auth/signin_page.dart';
 import 'package:designated_driver_app_2/global.dart';
 import 'package:designated_driver_app_2/methods/google_maps_methods.dart';
+import 'package:designated_driver_app_2/pages/user/select_destination_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+
 
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
 
   @override
-  State<MapPage> createState() => _MapPageState();
+  State<MapPage> createState() => _HomePageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class _HomePageState extends State<MapPage> {
 
   double bottomMapPadding = 0;
   final Completer<GoogleMapController> googleMapCompleterController =  Completer<GoogleMapController>();
+
+
   GoogleMapController? controllerGoogleMap;
   Position? currentPositionOfUser;
   double searchContainerHeight = 220;
   GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
+
+  List<LatLng> polylineCoordinates = [];
+
 
   getUserInforAndCheckBlockStatus() async{
     DatabaseReference reference = FirebaseDatabase.instance.ref().child("users").child(FirebaseAuth.instance.currentUser!.uid);
@@ -54,14 +64,53 @@ class _MapPageState extends State<MapPage> {
 
     //lotion in form of geographic coordinates
     LatLng userLatLng = LatLng(currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
-    CameraPosition positionCamera = CameraPosition(target: userLatLng, zoom: 15);
+    CameraPosition positionCamera = CameraPosition(target: userLatLng, zoom: 13.5);
     controllerGoogleMap!.animateCamera(CameraUpdate.newCameraPosition(positionCamera));
 
     await GoogleMapsMethods.convertGeoCoordinatesIntoHumanReadableAddress(currentPositionOfUser!, context);
   }
 
+  getPolyPoints()async{
+    print("\n\n\n\n\n\n\n\n calling getRouteBetween Coordinates function  .... \n\n\n\n\n\n\n\n");
+
+    PolylinePoints polylinePoints = PolylinePoints();
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      GoogleMapKey,
+      
+      PointLatLng(
+        currentPositionOfUser!.latitude,
+        currentPositionOfUser!.longitude
+      ),
+
+
+
+      PointLatLng(
+        Provider.of<AppInfo>(context, listen: false).dropOffLocation?.latitudePosition ?? 0.0,
+        Provider.of<AppInfo>(context, listen: false).dropOffLocation?.longitudePosition ?? 0.0,
+        )
+      );
+
+      print("\n\n\n\n\n\n\n\n CREATING polyline points.... \n\n\n\n\n\n\n\n");
+
+      if(result.points.isNotEmpty){
+        print("\n\n\n\n\n\n\n\npolyline points created successfully\n\n\n\n\n\n\n\n");
+        result.points.forEach((PointLatLng point)=>polylineCoordinates.add(
+          LatLng(point.latitude, point.longitude),
+          ),
+        );
+      }
+
+  }
+
    
   @override
+
+  void initState(){
+    super.initState();
+    getPolyPoints();
+    }
+
+
   Widget build(BuildContext context) {
     return Scaffold(
       key: sKey,
@@ -161,8 +210,14 @@ class _MapPageState extends State<MapPage> {
       body: Stack(
         children: [
 
-          //google map
+            
           GoogleMap(
+            polylines:{
+              Polyline(polylineId:PolylineId("route"),
+              points: polylineCoordinates,
+
+              )
+            },
             padding: EdgeInsets.only(top: 26, bottom: bottomMapPadding),
             mapType: MapType.normal,
             myLocationEnabled: true,
@@ -171,10 +226,24 @@ class _MapPageState extends State<MapPage> {
               controllerGoogleMap = mapController;
               googleMapCompleterController.complete(controllerGoogleMap);
               getCurrentLocation();
+              
             },
+          
+          markers: currentPositionOfUser != null
+              ? {
+                  Marker(
+                    markerId: const MarkerId("source"),
+                    position: LatLng(currentPositionOfUser!.latitude, currentPositionOfUser!.longitude),
+                  ),
+                  Marker(
+                    markerId: MarkerId("destination"),
+                    position: Provider.of<AppInfo>(context, listen: false).dropOffLocation?.destinationLocation?? LatLng(0.0, 0.0),
+                  )
+                }
+              : {},
           ),
 
-         /* //drawer button
+          //drawer button
           Positioned(
             top: 37,
             left: 20,
@@ -235,7 +304,7 @@ class _MapPageState extends State<MapPage> {
                               const Text("From", style: TextStyle(fontSize: 12),),
                               
                               Text(Provider.of<AppInfo>(context, listen: true).pickUpLocation == null? 'UPDATING...': 
-                              "${(Provider.of<AppInfo>(context, listen: false).pickUpLocation!.placeName!).substring(0, 20)}...",
+                              "${(Provider.of<AppInfo>(context, listen: false).pickUpLocation?.placeName ?? 'Unknown').substring(0, 20)}...",
                               style: const TextStyle(fontSize: 12),),
                             ],
                           )
@@ -265,7 +334,9 @@ class _MapPageState extends State<MapPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text("To", style: TextStyle(fontSize: 12),),
-                                const Text("where to go?" , style: TextStyle(fontSize: 12),),
+                                Text(Provider.of<AppInfo>(context, listen: true).dropOffLocation == null? 'Where to go...?': 
+                              "${(Provider.of<AppInfo>(context, listen: false).dropOffLocation?.placeName ?? 'Unknown').substring(0, 20)}...",
+                              style: const TextStyle(fontSize: 12),),
                               ],
                             ),
                           )
@@ -282,18 +353,42 @@ class _MapPageState extends State<MapPage> {
 
                       const SizedBox(height: 10,),
                       
-                      ElevatedButton(onPressed: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (C)=> SelectDestinationPage()));
-                      },
-                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                       ), 
-                       child: Text("Select Destination",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                        )
-                      ),
+                        Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (C) => SelectDestinationPage()));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                          ),
+                          child: Text(
+                            "Select Destination",
+                            style: TextStyle(
+                            color: Colors.white,
+                            ),
+                          ),
+                          ),
+                          ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              getPolyPoints();
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                          ),
+                          child: Text(
+                            "Show Route",
+                            style: TextStyle(
+                            color: Colors.white,
+                            ),
+                          ),
+                          ),
+                        ],
+                        ),
+                                       
                       
                     ],
                   ),
@@ -302,7 +397,7 @@ class _MapPageState extends State<MapPage> {
               ),
             ),
           ),
-        */],
+        ],
       ),
    
     );

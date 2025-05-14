@@ -69,9 +69,14 @@ class _SelectDestinationPageState extends State<SelectDestinationPage> {
                     const SizedBox(height: 6),
                     Column(
                       children: [
+
+                        // All the predictions start here
                         GestureDetector(
                           onTap: () {
-                            Navigator.pop(context);
+                            setState(() {
+                              Navigator.pop(context);
+                            });
+                            
                           },
                           child: const Align(
                             alignment: Alignment.centerLeft,

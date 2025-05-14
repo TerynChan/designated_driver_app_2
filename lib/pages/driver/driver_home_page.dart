@@ -55,8 +55,8 @@ class _DriverHomePageState extends State<DriverHomePage> {
   }
 }
 
-void main() {
+/*void main() {
   runApp(MaterialApp(
     home: DriverHomePage(),
   ));
-}
+}*/

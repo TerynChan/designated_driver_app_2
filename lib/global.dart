@@ -7,13 +7,21 @@ AssociateMethods associateMethods = AssociateMethods();
 String userName = "";
 String userPhone = "";
 String userId = "";
-bool isDriver = false;  
+bool isDriver = false;
+
+   double DestinationLatitudePosition = 0;
+   double DestinationLongitudePosition = 0;
 
 String GoogleMapKey = "AIzaSyA8Zb2zL4aJP3G_Z7FBtZJbOHI4Bo4IX0U";
 
 // ignore: unused_element
 const CameraPosition kGooglePlex = CameraPosition(
+
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14.4746,
    
   );
+
+
+
+

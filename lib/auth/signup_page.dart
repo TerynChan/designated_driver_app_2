@@ -338,10 +338,7 @@ signUserNow() async {
                     const SizedBox(height: 20),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SigninPage()));
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => const SigninPage()));
                       },
                       child: const Text("Already have an account? Sign in here"),
                     ),
