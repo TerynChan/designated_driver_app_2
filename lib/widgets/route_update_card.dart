@@ -5,7 +5,7 @@ import 'package:intl/intl.dart'; // For formatting dates
 class RouteUpdateCard extends StatelessWidget {
   final RouteUpdate update;
 
-  const RouteUpdateCard({Key? key, required this.update}) : super(key: key);
+  const RouteUpdateCard({super.key, required this.update});
 
   @override
   Widget build(BuildContext context) {

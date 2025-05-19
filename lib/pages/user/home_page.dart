@@ -1,5 +1,5 @@
 import 'package:designated_driver_app_2/pages/user/bookings_page.dart';
-import 'package:designated_driver_app_2/pages/user/map_page.dart';
+import 'package:designated_driver_app_2/pages/user/map_with_polylines.dart';
 import 'package:designated_driver_app_2/pages/user/news_page.dart';
 import 'package:designated_driver_app_2/pages/user/translation_page.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +15,11 @@ class _HomePageState extends State<HomePage> {
 
    int _selectedIndex = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    MapPage(),
-    BookingsPage(),
+  static final List<Widget> _pages = <Widget>[
+    MapWithPolyline(),
+    const BookingsPage(),
     TranslationPage(),
-    NewsPage(),
+    const NewsPage(),
   ];
 
   void _onItemTapped(int index) {

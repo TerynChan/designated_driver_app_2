@@ -1,4 +1,4 @@
-import 'package:designated_driver_app_2/methods/google_maps_methods.dart';
+import 'package:designated_driver_app_2/global.dart';
 import 'package:designated_driver_app_2/model/search_prediction_model.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 // ignore: must_be_immutable
 class PredictionPlacesUi extends StatefulWidget {
   SearchPredictionModel? predictionPlacesData;
+  static String destinationLocationName = "";
+  
 
   PredictionPlacesUi({super.key, this.predictionPlacesData});
 
@@ -15,9 +17,8 @@ class PredictionPlacesUi extends StatefulWidget {
 
 class _PredictionPlacesUiState extends State<PredictionPlacesUi> {
 
-  CreateUserRoute(String placeID) async {
-    await GoogleMapsMethods.getLocationLatLngDetails(context, placeID);
-
+  CreateUserRoute() async {
+    print("set destination function was run");
   }
 
 
@@ -27,8 +28,9 @@ class _PredictionPlacesUiState extends State<PredictionPlacesUi> {
       onPressed: (){
         //we want to collect the index of the place predicted, take  its place id value and draw a polyline between current location and predicted place location  
         setState(() {
-        Navigator.pop(context);
-        CreateUserRoute(widget.predictionPlacesData!.place_id.toString());
+        destinationLocationName = widget.predictionPlacesData!.main_text.toString();
+        print("\n\n\n\n\ndestinationlocation name: $destinationLocationName\n\n\n\n\n");
+        CreateUserRoute();
         });
         
       }, 

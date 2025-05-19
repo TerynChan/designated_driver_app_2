@@ -65,7 +65,7 @@ static getLocationLatLngDetails(BuildContext context,String placeID) async {
    //String PlacesdApiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$GoogleMapKey";
 
 
-   String PlacesdApiUrl = "https://maps.googleapis.com/maps/api/place/details/json?fields=geometry&place_id=${placeID}&key=$GoogleMapKey";
+   String PlacesdApiUrl = "https://maps.googleapis.com/maps/api/place/details/json?fields=geometry&place_id=$placeID&key=$GoogleMapKey";
    print("\n\n\n\n\n\n sending Request to Place Details APi \n\n\n\n\n\n");
       
       var responseFromApi = await SendReqeustToAPI(PlacesdApiUrl);

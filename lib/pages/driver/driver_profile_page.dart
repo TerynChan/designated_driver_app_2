@@ -1,8 +1,10 @@
 import 'package:designated_driver_app_2/auth/signin_page.dart';
-import 'package:designated_driver_app_2/global.dart';
+import 'package:designated_driver_app_2/global.dart'; 
 import 'package:designated_driver_app_2/methods/profile_image_uploader.dart';
+import 'package:designated_driver_app_2/model/driver_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart'; // Import Firebase Realtime Database
 
 
 class DriverProfilePage extends StatefulWidget {
@@ -13,37 +15,90 @@ class DriverProfilePage extends StatefulWidget {
 }
 
 class _DriverProfilePageState extends State<DriverProfilePage> {
-  double _rating = 0.0;
+  // State variables for profile data
+  DriverModel? _driverData; // Will hold the fetched driver data
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  // Placeholder values for data not in DriverModel (jobs completed, earnings)
+  // You would need to add these fields to your DriverModel and save them in Firebase
+  // if you want them to be dynamic.
   int _jobsCompleted = 0;
-  double _earnings = 00.00;
+  double _earnings = 0.00;
+
   final double coverHeight = 280;
-  final double profileHeight= 144;
+  final double profileHeight = 144;
 
-  
+  // Firebase references
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _usersRef = FirebaseDatabase.instance.ref('users');
 
-  // Function to simulate updating the values (you'd replace this with actual logic)
-  void _updateProfileData() {
-    setState(() {
-      _rating = 4.9;
-      _jobsCompleted = 130;
-      _earnings = 5750.50;
+  @override
+  void initState() {
+    super.initState();
+    _fetchDriverProfile();
+  }
+
+  void _fetchDriverProfile() {
+    final User? currentUser = _auth.currentUser;
+
+    if (currentUser == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'User not logged in.';
+      });
+      return;
+    }
+
+    _usersRef.child(currentUser.uid).onValue.listen((event) {
+      final data = event.snapshot.value;
+      if (data != null && data is Map<dynamic, dynamic>) {
+        setState(() {
+          _driverData = DriverModel.fromMap(data, currentUser.uid);
+          _isLoading = false;
+          _errorMessage = '';
+          // If you ever add jobsCompleted or earnings to DriverModel, update them here:
+          // _jobsCompleted = _driverData!.jobsCompleted;
+          // _earnings = _driverData!.earnings;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Driver data not found or invalid.';
+        });
+      }
+    }, onError: (error) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load profile: ${error.toString()}';
+      });
+      print("Error fetching driver profile: $error");
     });
   }
- 
-  @override 
+
+  // Function to handle logout
+  void _signOut() async {
+    await _auth.signOut();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (c) => const SigninPage()),
+      (route) => false, // Remove all previous routes
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-     
     return Scaffold(
-      body: ListView(
-        children: <Widget>[
-          buildTop(),
-          BuildContent(),         
-       
-            
-          ],
-               
-        
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage.isNotEmpty
+              ? Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)))
+              : ListView(
+                  children: <Widget>[
+                    buildTop(),
+                    BuildContent(),
+                  ],
+                ),
     );
   }
 
@@ -62,137 +117,132 @@ class _DriverProfilePageState extends State<DriverProfilePage> {
     );
   }
 
-Widget buildCoverImage()=> Container(
+  Widget buildCoverImage() => Container(
         color: Colors.grey,
-        child:FadeInImage.assetNetwork(
-        width: double.infinity,
-        height: coverHeight,
-        fit: BoxFit.cover,
-        placeholder: 'assets/background.jpg',
-        image: 'https://picsum.photos/250?image=9',
-),
-    
-
-  );
-
-  Widget buildProfileImage() => GestureDetector(
-    onTap: () {
-      // Navigate to the ProfileImageUploader widget when the avatar is clicked
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ProfileImageUploader(userId: userId),
+        child: FadeInImage.assetNetwork(
+          width: double.infinity,
+          height: coverHeight,
+          fit: BoxFit.cover,
+          placeholder: 'assets/background.jpg', // Ensure this asset exists
+          image: 'https://picsum.photos/250?image=9', // Your cover image URL
         ),
       );
-    },
-    child: CircleAvatar(
-      radius: 60,
-      backgroundImage: const NetworkImage(
-        'https://via.placeholder.com/150/A9A9A9/FFFFFF?Text=Avatar', // Replace with your profile image URL
-      ),
-      child: Align(
-        alignment: Alignment.bottomRight,
-        child: Icon(
-          Icons.camera_alt,
-          color: Colors.white,
-          size: 20,
-        ), // Optional: Add a camera icon overlay
-      ),
-    ),
-  );
 
-  Widget buildTop( ){
-    final top = coverHeight - profileHeight/3;
-    final bottom = profileHeight /2;
+  Widget buildProfileImage() {
+    final String? currentUserId = _auth.currentUser?.uid; // Get user ID here
 
-    return Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
-          children: <Widget>[
-             Container(
-              margin: EdgeInsets.only(bottom: bottom),
-              child: buildCoverImage()
+    return GestureDetector(
+      onTap: () {
+        if (currentUserId != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ProfileImageUploader(userId: currentUserId),
             ),
-                     
-            // Avatar 
-            Positioned(
-              top: top, // screenHeight * 0.3 - 60, // Position above the cover image
-              child: buildProfileImage(),
-            ),
-          ],
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please log in to upload a profile image.')),
+          );
+        }
+      },
+      child: CircleAvatar(
+        radius: 60,
+        backgroundImage: const NetworkImage(
+          'https://via.placeholder.com/150/A9A9A9/FFFFFF?Text=Avatar', // Your profile image URL
+        ),
+        child: const Align(
+          alignment: Alignment.bottomRight,
+          child: Icon(
+            Icons.camera_alt,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+      ),
     );
   }
 
-  Widget BuildContent(){
-    // Profile Details and Sign Out Button
+  Widget buildTop() {
+    final top = coverHeight - profileHeight / 3;
+    final bottom = profileHeight / 2;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(bottom: bottom),
+          child: buildCoverImage(),
+        ),
+        Positioned(
+          top: top,
+          child: buildProfileImage(),
+        ),
+      ],
+    );
+  }
+
+  Widget BuildContent() {
     return Padding(
-              padding: const EdgeInsets.only(top: 10.0), // Adjust padding based on avatar size and cover image height
-              child: Column(
-                children: <Widget>[
-                  const SizedBox(height: 16),
-                  const Text(
-                    'John Doe', // Replace with user's name
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'johndoe@example.com', // Replace with user's email
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 74),
-         
-                  // Rating, Jobs Completed, Earnings
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        _buildProfileInfo('Rating', _rating.toStringAsFixed(1)),
-                        _buildProfileInfo('Jobs Completed', _jobsCompleted.toString()),
-                        _buildProfileInfo('Earnings', '\$${_earnings.toStringAsFixed(2)}'),
-                      ],
+      padding: const EdgeInsets.only(top: 10.0),
+      child: Column(
+        children: <Widget>[
+          const SizedBox(height: 16),
+          Text(
+            _driverData?.name ?? 'Driver Name', // Display actual name or default
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _driverData?.email ?? 'driver@example.com', // Display actual email or default
+            style: const TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 74),
+
+          // Rating, Jobs Completed, Earnings
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                _buildProfileInfo('Rating', _driverData?.rating.toStringAsFixed(1) ?? 'N/A'), // Display actual rating
+                _buildProfileInfo('Jobs Completed', _jobsCompleted.toString()), // Placeholder
+                _buildProfileInfo('Earnings', '\$${_earnings.toStringAsFixed(2)}'), // Placeholder
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 54),
+
+          // Sign Out Button
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: MediaQuery.of(context).size.width / 3,
+                  child: ElevatedButton(
+                    onPressed: _signOut, // Call the _signOut function
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 22),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22.0),
+                      ),
+                    ),
+                    child: const Text(
+                      'Log Out',
+                      style: TextStyle(fontSize: 18),
                     ),
                   ),
-         
-                  const SizedBox(height: 54), // Adds spacing before the sign-out button
-         
-                  // Sign Out Button
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center, // Center the button horizontally
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width / 3, // Set width to one-third of the screen
-                          child: ElevatedButton(
-                            onPressed: () {
-                              FirebaseAuth.instance.signOut();
-                              Navigator.push(context, MaterialPageRoute(builder: (c) => SigninPage()));
-                              
-                              // Example of updating data (you'd have your actual logic here)
-                              _updateProfileData();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 22),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(22.0),
-                              ),
-                            ),
-                            child: const Text(
-                              'Log Out',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
-    
-  }
-
-
+}

@@ -6,7 +6,7 @@ class AddressModel {
   double? longitudePosition;
   String? placeID;
   String? placeName;
-  LatLng? destinationLocation = null;
+  LatLng? destinationLocation;
 
   AddressModel({
     this.HumanReadableAddress,

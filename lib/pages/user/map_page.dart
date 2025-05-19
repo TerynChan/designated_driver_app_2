@@ -94,10 +94,11 @@ class _HomePageState extends State<MapPage> {
 
       if(result.points.isNotEmpty){
         print("\n\n\n\n\n\n\n\npolyline points created successfully\n\n\n\n\n\n\n\n");
-        result.points.forEach((PointLatLng point)=>polylineCoordinates.add(
+        for (var point in result.points) {
+          polylineCoordinates.add(
           LatLng(point.latitude, point.longitude),
-          ),
-        );
+          );
+        }
       }
 
   }
@@ -111,6 +112,7 @@ class _HomePageState extends State<MapPage> {
     }
 
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: sKey,

@@ -4,6 +4,7 @@ class SearchPredictionModel {
   String? secondary_text;
   String? SearchPredictionLatitude;
   String ?SearchPredictionLongitude;
+  String? description;
    
 
   SearchPredictionModel({
@@ -12,12 +13,14 @@ class SearchPredictionModel {
     this.secondary_text,
     this.SearchPredictionLatitude,
     this.SearchPredictionLongitude,
+    this.description,
   });
 
   SearchPredictionModel.fromJson(Map<String, dynamic> json){
     place_id = json["place_id"];
     main_text = json["structured_formatting"]["main_text"];
     secondary_text = json["structured_formatting"]["secondary_text"];
+    description = json['description'];
 
   }
 }

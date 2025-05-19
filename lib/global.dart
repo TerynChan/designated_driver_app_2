@@ -8,6 +8,7 @@ String userName = "";
 String userPhone = "";
 String userId = "";
 bool isDriver = false;
+String? destinationLocationName;
 
    double DestinationLatitudePosition = 0;
    double DestinationLongitudePosition = 0;
